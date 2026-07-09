@@ -24,8 +24,6 @@
 
 
 // ---- Storage keys ----
-// Think of these as the labels on the two drawers in the cabinet.
-// One drawer holds all your notes, the other holds all your labels (paperclips).
 const NOTES_KEY = "keep_notes";
 const LABELS_KEY = "keep_labels";
 
@@ -68,11 +66,58 @@ function saveLabels(labels) {
 }
 
 // ---- Generating IDs ----
-// Every note and label needs a unique ID, like a serial number stamped
-// on a sticky note so you can always find *that specific one* again later,
-// even if two notes have identical text.
 function generateId() {
-    // Date.now() = current timestamp in milliseconds (basically always increasing)
-    // Math.random() chunk = extra randomness in case two notes are created in the same millisecond
     return `id_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
+
+// ---- Rendering notes ----
+
+function renderNotes() {
+  const mainEl = document.querySelector("main");
+  const notes = getNotes();
+
+  // Only show notes that are NOT archived on the main board.
+  // (Archived notes will get their own view later.)
+  const visibleNotes = notes.filter(function (note) {
+      return note.archived === false;
+  });
+
+  const noteCardsHtml = visibleNotes.map(function (note) {
+      // Decide what goes in the "body" area depending on note type.
+      const bodyHtml =
+          note.type === "checklist"
+              ? renderChecklistItems(note.items)
+              : `<p class="note-body">${note.body}</p>`;
+
+      return `
+          <div class="note-card" style="background-color: ${note.color};" data-id="${note.id}">
+              <h3 class="note-title">${note.title}</h3>
+              ${bodyHtml}
+              <div class="note-footer">
+                  <span class="material-symbols-outlined archive-btn" data-id="${note.id}">
+                      archive
+                  </span>
+                  <span class="material-symbols-outlined pin-btn" data-id="${note.id}">
+                      ${note.pinned ? "keep" : "keep_off"}
+                  </span>
+              </div>
+          </div>
+      `;
+  });
+
+  mainEl.innerHTML = noteCardsHtml.join("");
+}
+
+function renderChecklistItems(items) {
+  const itemsHtml = items.map(function (item) {
+      return `
+          <div class="checklist-item">
+              <input type="checkbox" ${item.checked ? "checked" : ""} data-id="${item.id}">
+              <span>${item.text}</span>
+          </div>
+      `;
+  });
+  return itemsHtml.join("");
+}
+
+renderNotes();
