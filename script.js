@@ -86,7 +86,7 @@ function renderNotes() {
       // Decide what goes in the "body" area depending on note type.
       const bodyHtml =
           note.type === "checklist"
-              ? renderChecklistItems(note.items)
+              ? renderChecklistItems(note.items, note.id)
               : `<p class="note-body">${note.body}</p>`;
 
       return `
@@ -121,3 +121,75 @@ function renderChecklistItems(items) {
 }
 
 renderNotes();
+
+// ---- Toggling notes ----
+
+function toggleArchive(noteId) {
+  const notes = getNotes();
+  const note = notes.find(function (n) {
+      return n.id === noteId;
+  });
+  note.archived = !note.archived;
+  saveNotes(notes);
+  renderNotes();
+}
+
+function togglePin(noteId) {
+  const notes = getNotes();
+  const note = notes.find(function (n) {
+      return n.id === noteId;
+  });
+  note.pinned = !note.pinned;
+  saveNotes(notes);
+  renderNotes();
+}
+
+function toggleChecklistItem(noteId, itemId) {
+  const notes = getNotes();
+  const note = notes.find(function (n) {
+      return n.id === noteId;
+  });
+  const item = note.items.find(function (i) {
+      return i.id === itemId;
+  });
+  item.checked = !item.checked;
+  saveNotes(notes);
+  renderNotes();
+}
+
+// ---- Handling clicks ----
+
+function handleMainClick(event) {
+    const archiveBtn = event.target.closest(".archive-btn");
+    if (archiveBtn) {
+        toggleArchive(archiveBtn.dataset.id);
+        return;
+    }
+
+    const pinBtn = event.target.closest(".pin-btn");
+    if (pinBtn) {
+        togglePin(pinBtn.dataset.id);
+        return;
+    }
+
+    const checkbox = event.target.closest(".checklist-item input[type='checkbox']");
+    if (checkbox) {
+        toggleChecklistItem(checkbox.dataset.noteId, checkbox.dataset.id);
+        return;
+    }
+}
+
+document.querySelector("main").addEventListener("click", handleMainClick);
+
+// ---- Rendering checklist items ----
+function renderChecklistItems(items, noteId) {
+    const itemsHtml = items.map(function (item) {
+        return `
+            <div class="checklist-item">
+                <input type="checkbox" ${item.checked ? "checked" : ""} data-id="${item.id}" data-note-id="${noteId}">
+                <span>${item.text}</span>
+            </div>
+        `;
+    });
+    return itemsHtml.join("");
+}
