@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,100..900;1,100..900&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #fff;
+    color: #202124;
+}
+
+/* ---- Nav ---- */
+
+nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 10;
+}
+
+nav .logo {
+    height: 32px;
+}
+
+nav h1 {
+    font-size: 22px;
+    margin: 0 20px 0 0;
+    font-weight: 400;
+    color: #5f6368;
+}
+
+nav #search {
+    flex: 1;
+    max-width: 700px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    background-color: #f1f3f4;
+    font-size: 15px;
+}
+
+nav .material-symbols-outlined {
+    cursor: pointer;
+    color: #5f6368;
+    font-size: 24px;
+}
+
+/* ---- Layout ---- */
+
+aside {
+    display: none; /* not built out yet, hidden for now so it doesn't leave odd empty space */
+}
+
+main {
+    padding: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* ---- Composer ---- */
+
+.composer {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    margin-bottom: 32px;
+    padding: 14px 16px;
+}
+
+.composer.collapsed {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    color: #5f6368;
+}
+
+.composer.expanded input,
+.composer.expanded textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 15px;
+    margin-bottom: 10px;
+    resize: none;
+}
+
+.composer.expanded input#composer-title {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.composer-toolbar {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.composer-toolbar button {
+    border: none;
+    background: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: #5f6368;
+}
+
+.composer-toolbar button:hover {
+    background-color: #f1f3f4;
+}
+
+.composer-checklist-item {
+    padding: 4px 0;
+    font-size: 15px;
+}
+
+.composer-checklist input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    padding: 6px 0;
+}
+
+/* ---- Notes grid (masonry-style via columns) ---- */
+
+.notes-grid {
+    column-width: 240px;
+    column-gap: 16px;
+}
+
+.note-card {
+    display: inline-block;
+    width: 100%;
+    break-inside: avoid;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    background-color: #fff;
+    transition: box-shadow 0.15s ease;
+}
+
+.note-card:hover {
+    box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+}
+
+.note-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+}
+
+.note-body {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    white-space: pre-wrap;
+    color: #202124;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    padding: 3px 0;
+}
+
+.note-footer {
+    display: flex;
+    gap: 14px;
+    margin-top: 10px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.note-card:hover .note-footer {
+    opacity: 1;
+}
+
+.note-footer .material-symbols-outlined {
+    cursor: pointer;
+    font-size: 20px;
+    color: #5f6368;
+}
+
+.note-footer .material-symbols-outlined:hover {
+    color: #202124;
+}

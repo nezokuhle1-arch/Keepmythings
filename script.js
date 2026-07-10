@@ -76,6 +76,7 @@ let composerType = "text";
 let draftTitle = "";
 let draftBody = "";
 let draftItems = [];
+let searchQuery = "";
 
 // ---- Rendering notes ----
 
@@ -83,10 +84,13 @@ function renderNotes() {
   const mainEl = document.querySelector("main");
   const notes = getNotes();
 
-  // Only show notes that are NOT archived on the main board.
-  // (Archived notes will get their own view later.)
   const visibleNotes = notes.filter(function (note) {
-      return note.archived === false;
+      if (note.archived !== false) {
+        return false;
+      }
+      const titleMatch = note.title.toLowerCase().includes(searchQuery);
+      const bodyMatch = note.body && note.body.toLowerCase().includes(searchQuery);
+      return titleMatch || bodyMatch;
   });
 
   const noteCardsHtml = visibleNotes.map(function (note) {
@@ -101,10 +105,10 @@ function renderNotes() {
               <h3 class="note-title">${note.title}</h3>
               ${bodyHtml}
               <div class="note-footer">
-                  <span class="material-symbols-outlined archive-btn" data-id="${note.id}">
+                  <span class="material-symbols-outlined archive-btn" data-id="${note.id}" title="Archive">
                       archive
                   </span>
-                  <span class="material-symbols-outlined pin-btn" data-id="${note.id}">
+                  <span class="material-symbols-outlined pin-btn" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
                       ${note.pinned ? "keep" : "keep_off"}
                   </span>
               </div>
@@ -112,7 +116,7 @@ function renderNotes() {
       `;
   });
 
-  mainEl.innerHTML = renderComposer() + noteCardsHtml.join("");
+  mainEl.innerHTML = renderComposer() + `<div class="notes-grid">${noteCardsHtml.join("")}</div>`;
 }
 
 function renderChecklistItems(items) {
@@ -209,6 +213,13 @@ function handleMainClick(event) {
 }
 
 document.querySelector("main").addEventListener("click", handleMainClick);
+
+function handleSearchInput(event) {
+    searchQuery = event.target.value.toLowerCase();
+    renderNotes();
+}
+
+document.querySelector("#search").addEventListener("input", handleSearchInput);
 
 // ---- Rendering checklist items ----
 function renderChecklistItems(items, noteId) {
