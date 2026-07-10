@@ -70,6 +70,13 @@ function generateId() {
     return `id_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+// ---- Composer (scratch pad) state ----
+let composerOpen = false;
+let composerType = "text";
+let draftTitle = "";
+let draftBody = "";
+let draftItems = [];
+
 // ---- Rendering notes ----
 
 function renderNotes() {
@@ -105,7 +112,7 @@ function renderNotes() {
       `;
   });
 
-  mainEl.innerHTML = noteCardsHtml.join("");
+  mainEl.innerHTML = renderComposer() + noteCardsHtml.join("");
 }
 
 function renderChecklistItems(items) {
@@ -119,8 +126,6 @@ function renderChecklistItems(items) {
   });
   return itemsHtml.join("");
 }
-
-renderNotes();
 
 // ---- Toggling notes ----
 
@@ -160,6 +165,30 @@ function toggleChecklistItem(noteId, itemId) {
 // ---- Handling clicks ----
 
 function handleMainClick(event) {
+
+    const checklistTrigger = event.target.closest("[data-action='expand-checklist']");
+    if (checklistTrigger) {
+        composerOpen = true;
+        composerType = "checklist";
+        renderNotes();
+        return;
+    }
+
+    const textTrigger = event.target.closest("[data-action='expand-text']");
+    if (textTrigger) {
+        composerOpen = true;
+        composerType = "text";
+        renderNotes();
+        document.querySelector("#composer-title").focus();
+        return;
+    }
+
+    const closeBtn = event.target.closest("[data-action='close-composer']");
+    if (closeBtn) {
+        saveComposerNote();
+        return;
+    }
+
     const archiveBtn = event.target.closest(".archive-btn");
     if (archiveBtn) {
         toggleArchive(archiveBtn.dataset.id);
@@ -193,3 +222,123 @@ function renderChecklistItems(items, noteId) {
     });
     return itemsHtml.join("");
 }
+
+// ---- Rendering composer ----
+
+function renderComposer() {
+    if (!composerOpen) {
+        return `
+            <div class="composer collapsed" id="composer">
+                <span data-action="expand-text">Take a note...</span>
+                <span class="material-symbols-outlined" data-action="expand-checklist">checklist</span>
+            </div>
+        `;
+    }
+
+    const bodyFieldHtml =
+        composerType === "checklist"
+            ? renderComposerChecklist()
+            : `<textarea id="composer-body" data-field="body" placeholder="Take a note...">${draftBody}</textarea>`;
+
+    return `
+        <div class="composer expanded" id="composer">
+            <input type="text" id="composer-title" data-field="title" placeholder="Title" value="${draftTitle}">
+            ${bodyFieldHtml}
+            <div class="composer-toolbar">
+                <button type="button" data-action="close-composer">Close</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderComposerChecklist() {
+    const itemsHtml = draftItems.map(function (item) {
+        return `<div class="composer-checklist-item">• ${item.text}</div>`;
+    });
+
+    return `
+        <div class="composer-checklist">
+            ${itemsHtml.join("")}
+            <input type="text" id="composer-new-item" placeholder="List item">
+        </div>
+    `;
+}
+
+//---- Handling input ----
+function handleMainInput(event) {
+    const field = event.target.dataset.field;
+    if (field === "title") {
+        draftTitle = event.target.value;
+    } else if (field === "body") {
+        draftBody = event.target.value;
+    }
+}
+
+document.querySelector("main").addEventListener("input", handleMainInput);
+
+
+function handleMainKeydown(event) {
+    if (event.key === "Enter" && event.target.id === "composer-new-item") {
+        event.preventDefault();
+        const text = event.target.value.trim();
+        if (text.length > 0) {
+            draftItems.push({ id: generateId(), text: text, checked: false });
+        }
+        renderNotes();
+        document.querySelector("#composer-new-item").focus();
+    }
+}
+
+document.querySelector("main").addEventListener("keydown", handleMainKeydown);
+
+// ---- Saving composer note ----
+
+function saveComposerNote() {
+    const hasContent =
+        draftTitle.trim().length > 0 ||
+        draftBody.trim().length > 0 ||
+        draftItems.length > 0;
+
+    if (hasContent) {
+        const notes = getNotes();
+        const newNote = {
+            id: generateId(),
+            type: composerType,
+            title: draftTitle.trim(),
+            body: composerType === "text" ? draftBody.trim() : "",
+            items: composerType === "checklist" ? draftItems : [],
+            labelIds: [],
+            color: "#ffffff",
+            pinned: false,
+            archived: false,
+            createdAt: Date.now()
+        };
+        notes.push(newNote);
+        saveNotes(notes);
+    }
+
+    resetComposer();
+    renderNotes();
+}
+
+function resetComposer() {
+    composerOpen = false;
+    composerType = "text";
+    draftTitle = "";
+    draftBody = "";
+    draftItems = [];
+}
+
+function handleDocumentClick(event) {
+    if (!composerOpen) {
+        return;
+    }
+    const insideComposer = event.target.closest("#composer");
+    if (!insideComposer) {
+        saveComposerNote();
+    }
+}
+
+document.addEventListener("click", handleDocumentClick);
+
+renderNotes();
